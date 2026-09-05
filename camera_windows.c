@@ -14,19 +14,50 @@ void cameraCapturar(HWND hwnd) {
     DWORD flags = 0;
     HRESULT hr = reader->lpVtbl->ReadSample(reader, MF_SOURCE_READER_FIRST_VIDEO_STREAM,
         0, NULL, &flags, NULL, &sample);
-    if (FAILED(hr) || sample == NULL) return;
+    if (FAILED(hr)) {
+        static int erroReportado;
+        if (!erroReportado) {
+            char mensagem[128];
+            sprintf(mensagem, "Erro ao ler frame da webcam.\\nHRESULT: 0x%08lX",
+                (unsigned long)hr);
+            MessageBoxA(hwnd, mensagem, "Erro de captura", MB_ICONERROR);
+            erroReportado = 1;
+        }
+        return;
+    }
+    if ((flags & MF_SOURCE_READERF_ENDOFSTREAM) != 0) return;
+    if (sample == NULL) return;
 
     hr = sample->lpVtbl->ConvertToContiguousBuffer(sample, &mediaBuffer);
     if (FAILED(hr)) {
+        MessageBoxA(hwnd, "Nao foi possivel acessar os dados do frame.",
+            "Erro de captura", MB_ICONERROR);
         sample->lpVtbl->Release(sample);
         return;
     }
 
     BYTE *dados = NULL;
     DWORD tamanhoMaximo = 0, tamanhoAtual = 0;
-    if (SUCCEEDED(mediaBuffer->lpVtbl->Lock(mediaBuffer, &dados, &tamanhoMaximo, &tamanhoAtual))) {
-        asciiAtualizar(dados, hwnd);
+    hr = mediaBuffer->lpVtbl->Lock(mediaBuffer, &dados, &tamanhoMaximo, &tamanhoAtual);
+    if (SUCCEEDED(hr)) {
+        if (tamanhoAtual >= 640U * 480U * 4U) {
+            asciiAtualizar(dados, hwnd);
+        } else {
+            static int tamanhoReportado;
+            if (!tamanhoReportado) {
+                char mensagem[160];
+                sprintf(mensagem, "Frame recebido com tamanho inesperado: %lu bytes.",
+                    (unsigned long)tamanhoAtual);
+                MessageBoxA(hwnd, mensagem, "Erro de captura", MB_ICONERROR);
+                tamanhoReportado = 1;
+            }
+        }
         mediaBuffer->lpVtbl->Unlock(mediaBuffer);
+    } else {
+        char mensagem[128];
+        sprintf(mensagem, "Nao foi possivel bloquear o frame.\\nHRESULT: 0x%08lX",
+            (unsigned long)hr);
+        MessageBoxA(hwnd, mensagem, "Erro de captura", MB_ICONERROR);
     }
     mediaBuffer->lpVtbl->Release(mediaBuffer);
     sample->lpVtbl->Release(sample);
