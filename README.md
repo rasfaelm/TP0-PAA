@@ -12,6 +12,7 @@ Requisitos:
 
 - Linux com uma webcam V4L2, normalmente `/dev/video0`.
 - GCC e headers do kernel Linux.
+- Biblioteca de desenvolvimento JPEG (`libjpeg-dev` no Debian/Ubuntu).
 
 Compile com:
 

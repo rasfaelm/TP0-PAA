@@ -69,8 +69,13 @@ HRESULT cameraInicializar(int indiceDispositivo) {
     if (FAILED(hr)) goto erro;
     hr = MFCreateMediaType(&tipo);
     if (FAILED(hr)) goto erro;
-    tipo->lpVtbl->SetGUID(tipo, &MF_MT_MAJOR_TYPE, &MFMediaType_Video);
-    tipo->lpVtbl->SetGUID(tipo, &MF_MT_SUBTYPE, &MFVideoFormat_RGB32);
+    hr = tipo->lpVtbl->SetGUID(tipo, &MF_MT_MAJOR_TYPE, &MFMediaType_Video);
+    if (FAILED(hr)) goto erro;
+    hr = tipo->lpVtbl->SetGUID(tipo, &MF_MT_SUBTYPE, &MFVideoFormat_RGB32);
+    if (FAILED(hr)) goto erro;
+    hr = tipo->lpVtbl->SetUINT64(tipo, &MF_MT_FRAME_SIZE,
+        ((UINT64)640 << 32) | (UINT64)480);
+    if (FAILED(hr)) goto erro;
     hr = reader->lpVtbl->SetCurrentMediaType(reader, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, tipo);
     if (FAILED(hr)) goto erro;
     printf("Webcam inicializada com sucesso!\n");

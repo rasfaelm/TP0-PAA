@@ -11,6 +11,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <linux/videodev2.h>
+#include <jpeglib.h>
+#include <setjmp.h>
 
 struct Buffer {
     void *dados;
@@ -25,6 +27,18 @@ static size_t tamanhoFrame;
 static int larguraCamera;
 static int alturaCamera;
 static int bytesPorPixelCamera = 3;
+static unsigned int formatoCamera;
+static unsigned char *frameDecodificado;
+
+struct ErroJpeg {
+    struct jpeg_error_mgr base;
+    jmp_buf contexto;
+};
+
+static void erroJpeg(j_common_ptr comum) {
+    struct ErroJpeg *erro = (struct ErroJpeg *)comum->err;
+    longjmp(erro->contexto, 1);
+}
 
 static int ioctlCamera(int comando, void *arg) {
     int resultado;
@@ -63,14 +77,17 @@ int cameraInicializarLinux(const char *dispositivo, int largura, int altura) {
         return 0;
     }
     if (formato.fmt.pix.pixelformat != V4L2_PIX_FMT_RGB24 &&
-        formato.fmt.pix.pixelformat != V4L2_PIX_FMT_YUYV) {
-        fprintf(stderr, "A webcam nao aceitou RGB24 nem YUYV.\n");
+        formato.fmt.pix.pixelformat != V4L2_PIX_FMT_YUYV &&
+        formato.fmt.pix.pixelformat != V4L2_PIX_FMT_MJPEG) {
+        fprintf(stderr, "Formato retornado pela webcam nao suportado: %.4s\n",
+            (char *)&formato.fmt.pix.pixelformat);
         cameraLiberarLinux();
         return 0;
     }
     larguraCamera = (int)formato.fmt.pix.width;
     alturaCamera = (int)formato.fmt.pix.height;
     bytesPorPixelCamera = formato.fmt.pix.pixelformat == V4L2_PIX_FMT_YUYV ? 2 : 3;
+    formatoCamera = formato.fmt.pix.pixelformat;
 
     memset(&requisicao, 0, sizeof(requisicao));
     requisicao.count = 4;
@@ -126,6 +143,47 @@ int cameraCapturarLinux(void) {
     if (ioctlCamera(VIDIOC_DQBUF, &buffer) == -1) return 0;
     ultimoFrame = buffers[buffer.index].dados;
     tamanhoFrame = buffer.bytesused;
+    if (formatoCamera == V4L2_PIX_FMT_MJPEG) {
+        struct jpeg_decompress_struct decodificador;
+        struct ErroJpeg erro;
+        JSAMPROW linha;
+
+        decodificador.err = jpeg_std_error(&erro.base);
+        erro.base.error_exit = erroJpeg;
+        if (setjmp(erro.contexto) != 0) {
+            jpeg_destroy_decompress(&decodificador);
+            ioctlCamera(VIDIOC_QBUF, &buffer);
+            return 0;
+        }
+        jpeg_create_decompress(&decodificador);
+        jpeg_mem_src(&decodificador, (unsigned char *)ultimoFrame, tamanhoFrame);
+        if (jpeg_read_header(&decodificador, TRUE) != JPEG_HEADER_OK) {
+            jpeg_destroy_decompress(&decodificador);
+            ioctlCamera(VIDIOC_QBUF, &buffer);
+            return 0;
+        }
+        decodificador.out_color_space = JCS_RGB;
+        jpeg_start_decompress(&decodificador);
+        size_t tamanhoDecodificado = (size_t)decodificador.output_width *
+            decodificador.output_height * decodificador.output_components;
+        unsigned char *novoFrame = realloc(frameDecodificado, tamanhoDecodificado);
+        if (novoFrame == NULL) {
+            jpeg_destroy_decompress(&decodificador);
+            ioctlCamera(VIDIOC_QBUF, &buffer);
+            return 0;
+        }
+        frameDecodificado = novoFrame;
+        while (decodificador.output_scanline < decodificador.output_height) {
+            linha = frameDecodificado + decodificador.output_scanline *
+                decodificador.output_width * decodificador.output_components;
+            jpeg_read_scanlines(&decodificador, &linha, 1);
+        }
+        larguraCamera = (int)decodificador.output_width;
+        alturaCamera = (int)decodificador.output_height;
+        jpeg_finish_decompress(&decodificador);
+        jpeg_destroy_decompress(&decodificador);
+        ultimoFrame = frameDecodificado;
+    }
     if (ioctlCamera(VIDIOC_QBUF, &buffer) == -1) return 0;
     return 1;
 }
@@ -147,6 +205,8 @@ void cameraLiberarLinux(void) {
     for (unsigned int i = 0; i < quantidadeBuffers; i++)
         if (buffers[i].dados != NULL) munmap(buffers[i].dados, buffers[i].tamanho);
     free(buffers);
+    free(frameDecodificado);
+    frameDecodificado = NULL;
     buffers = NULL;
     quantidadeBuffers = 0;
     if (camera >= 0) close(camera);
