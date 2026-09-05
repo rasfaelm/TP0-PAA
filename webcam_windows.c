@@ -10,16 +10,23 @@
 static HWND hwndPrincipal = NULL;
 
 static int lerQualidade(void) {
+
     int valor;
+
     while (1) {
+
         printf("\nDigite a qualidade desejada (0-100): ");
         fflush(stdout);
+
         if (scanf("%d", &valor) != 1) {
             int c;
+
             while ((c = getchar()) != '\n' && c != EOF);
             printf("\nValor invalido!\n");
+            
             continue;
         }
+
         if (valor < 0 || valor > 100) {
             printf("\nDigite um valor entre 0 e 100.\n");
             continue;
@@ -29,6 +36,7 @@ static int lerQualidade(void) {
 }
 
 static LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    
     switch (msg) {
     case WM_PAINT: {
         PAINTSTRUCT ps;
@@ -45,15 +53,18 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 }
 
 int executarWebcamWindows(int argc, char **argv) {
+    
     HINSTANCE hInstance = GetModuleHandleA(NULL);
     int nCmdShow = SW_SHOWDEFAULT;
     HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    
     if (FAILED(hr)) {
         MessageBoxA(NULL, "Erro ao inicializar COM!", "Erro", MB_ICONERROR);
         return 1;
     }
 
     hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
+    
     if (FAILED(hr)) {
         MessageBoxA(NULL, "Erro ao iniciar Media Foundation!", "Erro", MB_ICONERROR);
         CoUninitialize();
@@ -61,20 +72,24 @@ int executarWebcamWindows(int argc, char **argv) {
     }
 
     int indiceDispositivo = 0;
+    
     if (argc > 1) {
         char *fim;
         long valor = strtol(argv[1], &fim, 10);
+        
         if (*argv[1] == '\0' || *fim != '\0' || valor < 0 || valor > 2147483647L) {
             fprintf(stderr, "Indice de camera invalido: %s\n", argv[1]);
             MFShutdown();
             CoUninitialize();
             return 1;
         }
+        
         indiceDispositivo = (int)valor;
     }
 
     int qualidade = lerQualidade();
     hr = cameraInicializar(indiceDispositivo);
+    
     if (FAILED(hr)) {
         char mensagem[256];
         sprintf(mensagem, "Erro ao iniciar webcam!\nHRESULT: 0x%08lX", (unsigned long)hr);
@@ -90,6 +105,7 @@ int executarWebcamWindows(int argc, char **argv) {
     wc.hInstance = hInstance;
     wc.lpszClassName = "WebcamASCII";
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    
     if (!RegisterClassA(&wc)) {
         MessageBoxA(NULL, "Erro ao registrar a janela!", "Erro", MB_ICONERROR);
         cameraLiberar();
@@ -98,9 +114,8 @@ int executarWebcamWindows(int argc, char **argv) {
         return 1;
     }
 
-    hwndPrincipal = CreateWindowExA(0, "WebcamASCII", "Webcam ASCII - Media Foundation",
-        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
-        NULL, NULL, hInstance, NULL);
+    hwndPrincipal = CreateWindowExA(0, "WebcamASCII", "Webcam ASCII - Media Foundation", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 500, NULL, NULL, hInstance, NULL);
+    
     if (hwndPrincipal == NULL) {
         cameraLiberar();
         MFShutdown();
@@ -114,6 +129,7 @@ int executarWebcamWindows(int argc, char **argv) {
     UpdateWindow(hwndPrincipal);
 
     MSG msg;
+    
     while (1) {
         while (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) goto fim;

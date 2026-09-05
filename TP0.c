@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
 #ifdef _WIN32
 #include "webcam_windows.h"
 #else
 #include "webcam_linux.h"
 #endif
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define LINHAS 20
 #define COLUNAS 80
@@ -17,7 +17,6 @@ void inicializarQuadro(char quadro[LINHAS][COLUNAS]) {
 
     for (i = 0; i < LINHAS; i++) {
         for (j = 0; j < COLUNAS; j++) {
-
             if (i == 0 || i == LINHAS - 1) {
                 quadro[i][j] = '-';
             } else if (j == 0 || j == COLUNAS - 1) {
@@ -36,7 +35,6 @@ void imprimirQuadro(char quadro[LINHAS][COLUNAS]) {
         for (j = 0; j < COLUNAS; j++) {
             printf("%c", quadro[i][j]);
         }
-
         printf("\n");
     }
 }
@@ -45,7 +43,6 @@ int posicaoLivre(char quadro[LINHAS][COLUNAS], int linha, int coluna) {
 
     if (linha <= 0 || linha >= LINHAS - 1 ||
         coluna <= 0 || coluna >= COLUNAS - 1) {
-
         return 0;
     }
 
@@ -174,25 +171,31 @@ void gerarObra(char quadro[LINHAS][COLUNAS],int tipo,int quantidade) {
     for (i = 0; i < quantidade; i++) {
         if (tipo == 1) {
             int linha, coluna;
+            
             do {
                 linha = rand() % (LINHAS - 2) + 1;
                 coluna = rand() % (COLUNAS - 2) + 1;
             } while (!podeA(quadro, linha, coluna));
             colocarA(quadro, linha, coluna);
+
         } else if (tipo == 2) {
+            
             int linha, coluna;
             do {
                 linha = rand() % (LINHAS - 4) + 2;
                 coluna = rand() % (COLUNAS - 4) + 2;
             } while (!podeSoma(quadro, linha, coluna));
             colocarSoma(quadro, linha, coluna);
+
         } else if (tipo == 3) {
+            
             int linha, coluna;
             do {
                 linha = rand() % (LINHAS - 4) + 2;
                 coluna = rand() % (COLUNAS - 4) + 2;
             } while (!podeX(quadro, linha, coluna));
             colocarX(quadro, linha, coluna);
+
         } else if (tipo == 4) {
             gerarFiguraAleatoria(quadro);
         }
@@ -217,7 +220,6 @@ int main(int argc, char **argv) {
     printf("Digite o tipo de figura basica desejada: ");
     scanf("%d", &tipo);
 
-
     if (tipo == 5) {
         #ifdef _WIN32
             return executarWebcamWindows(argc, argv);
@@ -225,7 +227,6 @@ int main(int argc, char **argv) {
             return executarWebcamLinux(argc, argv);
         #endif
     }
-
 
     if (tipo < 1 || tipo > 4) {
         printf("\nOpcao ainda nao implementada.\n");
@@ -236,7 +237,6 @@ int main(int argc, char **argv) {
     printf("(menor ou igual a zero para aleatorio): ");
     scanf("%d", &quantidade);
 
-
     if (quantidade <= 0) {
         quantidade = rand() % 100 + 1;
     }
@@ -244,7 +244,6 @@ int main(int argc, char **argv) {
     if (quantidade > MAX_FIGURAS) {
         quantidade = MAX_FIGURAS;
     }
-
 
     do {
         inicializarQuadro(quadro);

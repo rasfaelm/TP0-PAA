@@ -29,9 +29,9 @@ static void inicializarFonte(HWND hwnd, int tamanhoFonte) {
     TEXTMETRICA metricas;
 
     if (fonteASCII != NULL) DeleteObject(fonteASCII);
-    fonteASCII = CreateFontA(tamanhoFonte, 0, 0, 0, FW_NORMAL, FALSE, FALSE,
-        FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-        DEFAULT_QUALITY, FIXED_PITCH | FF_MODERN, "Consolas");
+    
+    fonteASCII = CreateFontA(tamanhoFonte, 0, 0, 0, FW_NORMAL, FALSE, FALSE,FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY, FIXED_PITCH | FF_MODERN, "Consolas");
+    
     if (fonteASCII == NULL) {
         MessageBoxA(hwnd, "Erro ao criar a fonte!", "Erro", MB_ICONERROR);
         return;
@@ -47,48 +47,65 @@ static void inicializarFonte(HWND hwnd, int tamanhoFonte) {
 }
 
 void asciiInicializar(HWND hwnd, int qualidade) {
+
     RECT areaTrabalho;
     SystemParametersInfoA(SPI_GETWORKAREA, 0, &areaTrabalho, 0);
     int larguraDisponivel = areaTrabalho.right - areaTrabalho.left - MARGEM_HORIZONTAL;
     int alturaDisponivel = areaTrabalho.bottom - areaTrabalho.top - MARGEM_VERTICAL;
     int fonteMaxima = larguraDisponivel / COLUNAS_MINIMAS;
     int fonteMaxVertical = alturaDisponivel / LINHAS_MINIMAS;
+    
     if (fonteMaxVertical < fonteMaxima) fonteMaxima = fonteMaxVertical;
+    
     if (fonteMaxima > 72) fonteMaxima = 72;
+    
     if (fonteMaxima < FONTE_MINIMA) fonteMaxima = FONTE_MINIMA;
 
     int tamanhoFonte = fonteMaxima - (qualidade * (fonteMaxima - FONTE_MINIMA)) / 100;
+    
     if (tamanhoFonte < FONTE_MINIMA) tamanhoFonte = FONTE_MINIMA;
+    
     inicializarFonte(hwnd, tamanhoFonte);
 
     if (larguraCaractere <= 0) larguraCaractere = 1;
+    
     if (alturaCaractere <= 0) alturaCaractere = 1;
+    
     larguraASCII = larguraDisponivel / larguraCaractere;
     alturaASCII = alturaDisponivel / alturaCaractere;
+    
     if (larguraASCII > MAX_LARGURA_ASCII) larguraASCII = MAX_LARGURA_ASCII;
+    
     if (alturaASCII > MAX_ALTURA_ASCII) alturaASCII = MAX_ALTURA_ASCII;
+    
     if (larguraASCII < 1) larguraASCII = 1;
+    
     if (alturaASCII < 1) alturaASCII = 1;
 }
 
 void asciiAjustarJanela(HWND hwnd) {
     RECT rect = { 0, 0, larguraASCII * larguraCaractere, alturaASCII * alturaCaractere };
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
-    SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top,
-        SWP_NOMOVE | SWP_NOZORDER);
+    SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top,SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void asciiAtualizar(const BYTE *dados, HWND hwnd) {
+
     float escalaX = (float)LARGURA_ORIGINAL / (float)larguraASCII;
     float escalaY = (float)ALTURA_ORIGINAL / (float)alturaASCII;
 
     for (int y = 0; y < alturaASCII; y++) {
         for (int x = 0; x < larguraASCII; x++) {
+            
             int origemX = LARGURA_ORIGINAL - 1 - (int)(x * escalaX);
             int origemY = (int)(y * escalaY);
+            
             if (origemX < 0) origemX = 0;
+            
             if (origemX >= LARGURA_ORIGINAL) origemX = LARGURA_ORIGINAL - 1;
+            
             if (origemY >= ALTURA_ORIGINAL) origemY = ALTURA_ORIGINAL - 1;
+            
             int indice = (origemY * LARGURA_ORIGINAL + origemX) * 4;
             BYTE blue = dados[indice];
             BYTE green = dados[indice + 1];
