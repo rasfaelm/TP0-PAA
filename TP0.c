@@ -207,8 +207,6 @@ int main(int argc, char **argv) {
     char novoQuadro;
 
     srand(time(NULL));
-    printf("PROGRAMA GERADOR DE OBRA DE ARTE:\n");
-    printf("=================================\n\n");
     printf("Escolha o tipo de figura basica a ser usada ");
     printf("para criar a obra:\n\n");
     printf("1 - asterisco simples.\n");
