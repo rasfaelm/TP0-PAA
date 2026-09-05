@@ -1,8 +1,7 @@
-# Webcam ASCII
+# TP0
 
-O projeto possui duas implementacoes da webcam e um unico ponto de entrada:
+O projeto possui duas implementacoes da webcam:
 
-- `TP0.c` contem o unico `main` e apresenta o menu do projeto.
 - Windows: os arquivos `*_windows.c`, usando Win32 e Media Foundation.
 - Linux: os arquivos `*_linux.c`, usando terminal e V4L2.
 
@@ -42,13 +41,11 @@ Compile os arquivos originais com MinGW:
 gcc -DINITGUID TP0.c webcam_windows.c ascii_windows.c camera_windows.c -o tp0.exe -lole32 -lmfplat -lmfreadwrite -lmf -luuid -lgdi32 -luser32
 ```
 
-No menu, escolha `5 - webcam ASCII` para iniciar a camera. Por padrao, a
-primeira camera encontrada sera usada. Para selecionar outra camera, informe
-seu indice como primeiro argumento:
+Por padrao, a primeira camera encontrada sera usada. Para selecionar outra camera,
+informe seu indice como primeiro argumento:
 
 ```powershell
 .\tp0.exe 1
 ```
 
-O indice comeca em `0`; a quantidade e a ordem das cameras sao informadas
-quando o programa inicia.
+O indice comeca em `0`;
