@@ -1,5 +1,6 @@
 #include "camera_windows.h"
 #include "ascii_windows.h"
+
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>

@@ -1,9 +1,10 @@
-#include <windows.h>
-#include <mfapi.h>
-#include <stdio.h>
 #include "ascii_windows.h"
 #include "camera_windows.h"
 #include "webcam_windows.h"
+
+#include <windows.h>
+#include <mfapi.h>
+#include <stdio.h>
 
 static HWND hwndPrincipal = NULL;
 

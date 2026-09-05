@@ -1,7 +1,9 @@
 #define _DEFAULT_SOURCE
+
 #include "ascii_linux.h"
 #include "camera_linux.h"
 #include "webcam_linux.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
