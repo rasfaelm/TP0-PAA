@@ -32,7 +32,7 @@ void cameraCapturar(HWND hwnd) {
     sample->lpVtbl->Release(sample);
 }
 
-HRESULT cameraInicializar(void) {
+HRESULT cameraInicializar(int indiceDispositivo) {
     HRESULT hr;
     IMFAttributes *atributos = NULL, *readerAttributes = NULL;
     IMFActivate **dispositivos = NULL;
@@ -51,7 +51,14 @@ HRESULT cameraInicializar(void) {
         goto erro;
     }
     printf("Quantidade de webcams encontradas: %u\n", quantidade);
-    hr = dispositivos[0]->lpVtbl->ActivateObject(dispositivos[0], &IID_IMFMediaSource,
+    if ((UINT32)indiceDispositivo >= quantidade) {
+        fprintf(stderr, "Indice de camera invalido. Use um valor entre 0 e %u.\n",
+            quantidade - 1);
+        hr = E_INVALIDARG;
+        goto erro;
+    }
+    printf("Usando a camera de indice %d.\n", indiceDispositivo);
+    hr = dispositivos[indiceDispositivo]->lpVtbl->ActivateObject(dispositivos[indiceDispositivo], &IID_IMFMediaSource,
         (void **)&fonte);
     if (FAILED(hr)) goto erro;
     hr = MFCreateAttributes(&readerAttributes, 2);

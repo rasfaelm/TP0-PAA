@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <mfapi.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static HWND hwndPrincipal = NULL;
 
@@ -43,7 +44,7 @@ static LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     return DefWindowProcA(hwnd, msg, wParam, lParam);
 }
 
-int executarWebcamWindows(void) {
+int executarWebcamWindows(int argc, char **argv) {
     HINSTANCE hInstance = GetModuleHandleA(NULL);
     int nCmdShow = SW_SHOWDEFAULT;
     HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -59,8 +60,21 @@ int executarWebcamWindows(void) {
         return 1;
     }
 
+    int indiceDispositivo = 0;
+    if (argc > 1) {
+        char *fim;
+        long valor = strtol(argv[1], &fim, 10);
+        if (*argv[1] == '\0' || *fim != '\0' || valor < 0 || valor > 2147483647L) {
+            fprintf(stderr, "Indice de camera invalido: %s\n", argv[1]);
+            MFShutdown();
+            CoUninitialize();
+            return 1;
+        }
+        indiceDispositivo = (int)valor;
+    }
+
     int qualidade = lerQualidade();
-    hr = cameraInicializar();
+    hr = cameraInicializar(indiceDispositivo);
     if (FAILED(hr)) {
         char mensagem[256];
         sprintf(mensagem, "Erro ao iniciar webcam!\nHRESULT: 0x%08lX", (unsigned long)hr);

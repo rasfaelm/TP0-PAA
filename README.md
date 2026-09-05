@@ -41,4 +41,13 @@ Compile os arquivos originais com MinGW:
 gcc -DINITGUID TP0.c webcam_windows.c ascii_windows.c camera_windows.c -o tp0.exe -lole32 -lmfplat -lmfreadwrite -lmf -luuid -lgdi32 -luser32
 ```
 
-No menu, escolha `5 - webcam ASCII` para iniciar a camera.
+No menu, escolha `5 - webcam ASCII` para iniciar a camera. Por padrao, a
+primeira camera encontrada sera usada. Para selecionar outra camera, informe
+seu indice como primeiro argumento:
+
+```powershell
+.\tp0.exe 1
+```
+
+O indice comeca em `0`; a quantidade e a ordem das cameras sao informadas
+quando o programa inicia.

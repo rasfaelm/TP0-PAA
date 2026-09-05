@@ -3,7 +3,7 @@
 
 #include <windows.h>
 
-HRESULT cameraInicializar(void);
+HRESULT cameraInicializar(int indiceDispositivo);
 void cameraCapturar(HWND hwnd);
 void cameraLiberar(void);
 

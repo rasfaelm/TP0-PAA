@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
 
     if (tipo == 5) {
         #ifdef _WIN32
-            return executarWebcamWindows();
+            return executarWebcamWindows(argc, argv);
         #else
             return executarWebcamLinux(argc, argv);
         #endif
