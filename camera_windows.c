@@ -7,7 +7,7 @@
 
 static IMFSourceReader *reader = NULL;
 
-void CameraCapturar(HWND hwnd) {
+void cameraCapturar(HWND hwnd) {
     IMFSample *sample = NULL;
     IMFMediaBuffer *mediaBuffer = NULL;
     DWORD flags = 0;
@@ -24,14 +24,14 @@ void CameraCapturar(HWND hwnd) {
     BYTE *dados = NULL;
     DWORD tamanhoMaximo = 0, tamanhoAtual = 0;
     if (SUCCEEDED(mediaBuffer->lpVtbl->Lock(mediaBuffer, &dados, &tamanhoMaximo, &tamanhoAtual))) {
-        AsciiAtualizar(dados, hwnd);
+        asciiAtualizar(dados, hwnd);
         mediaBuffer->lpVtbl->Unlock(mediaBuffer);
     }
     mediaBuffer->lpVtbl->Release(mediaBuffer);
     sample->lpVtbl->Release(sample);
 }
 
-HRESULT CameraInicializar(void) {
+HRESULT cameraInicializar(void) {
     HRESULT hr;
     IMFAttributes *atributos = NULL, *readerAttributes = NULL;
     IMFActivate **dispositivos = NULL;
@@ -79,7 +79,7 @@ erro:
     return hr;
 }
 
-void CameraLiberar(void) {
+void cameraLiberar(void) {
     if (reader != NULL) {
         reader->lpVtbl->Release(reader);
         reader = NULL;

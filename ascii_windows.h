@@ -3,13 +3,13 @@
 
 #include <windows.h>
 
-void AsciiInicializar(HWND hwnd, int qualidade);
-void AsciiAjustarJanela(HWND hwnd);
-void AsciiDesenhar(HDC hdc);
-void AsciiAtualizar(const BYTE *dados, HWND hwnd);
-void AsciiLiberar(void);
-int AsciiLargura(void);
-int AsciiAltura(void);
-int AsciiAlturaCaractere(void);
+void asciiInicializar(HWND hwnd, int qualidade);
+void asciiAjustarJanela(HWND hwnd);
+void asciiDesenhar(HDC hdc);
+void asciiAtualizar(const BYTE *dados, HWND hwnd);
+void asciiLiberar(void);
+int asciiLargura(void);
+int asciiAltura(void);
+int asciiAlturaCaractere(void);
 
 #endif

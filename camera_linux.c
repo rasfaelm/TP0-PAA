@@ -23,13 +23,13 @@ static int larguraCamera;
 static int alturaCamera;
 static int bytesPorPixelCamera = 3;
 
-static int Ioctl(int comando, void *arg) {
+static int ioctlCamera(int comando, void *arg) {
     int resultado;
     do resultado = ioctl(camera, comando, arg); while (resultado == -1 && errno == EINTR);
     return resultado;
 }
 
-int CameraInicializarLinux(const char *dispositivo, int largura, int altura) {
+int cameraInicializarLinux(const char *dispositivo, int largura, int altura) {
     struct v4l2_capability capacidade;
     struct v4l2_format formato;
     struct v4l2_requestbuffers requisicao;
@@ -40,11 +40,11 @@ int CameraInicializarLinux(const char *dispositivo, int largura, int altura) {
         perror("Nao foi possivel abrir a webcam");
         return 0;
     }
-    if (Ioctl(VIDIOC_QUERYCAP, &capacidade) == -1 ||
+    if (ioctlCamera(VIDIOC_QUERYCAP, &capacidade) == -1 ||
         !(capacidade.capabilities & V4L2_CAP_VIDEO_CAPTURE) ||
         !(capacidade.capabilities & V4L2_CAP_STREAMING)) {
         fprintf(stderr, "Dispositivo sem suporte a captura V4L2 por streaming.\n");
-        CameraLiberarLinux();
+        cameraLiberarLinux();
         return 0;
     }
 
@@ -54,15 +54,15 @@ int CameraInicializarLinux(const char *dispositivo, int largura, int altura) {
     formato.fmt.pix.height = altura;
     formato.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
     formato.fmt.pix.field = V4L2_FIELD_ANY;
-    if (Ioctl(VIDIOC_S_FMT, &formato) == -1) {
+    if (ioctlCamera(VIDIOC_S_FMT, &formato) == -1) {
         perror("VIDIOC_S_FMT");
-        CameraLiberarLinux();
+        cameraLiberarLinux();
         return 0;
     }
     if (formato.fmt.pix.pixelformat != V4L2_PIX_FMT_RGB24 &&
         formato.fmt.pix.pixelformat != V4L2_PIX_FMT_YUYV) {
         fprintf(stderr, "A webcam nao aceitou RGB24 nem YUYV.\n");
-        CameraLiberarLinux();
+        cameraLiberarLinux();
         return 0;
     }
     larguraCamera = (int)formato.fmt.pix.width;
@@ -73,9 +73,9 @@ int CameraInicializarLinux(const char *dispositivo, int largura, int altura) {
     requisicao.count = 4;
     requisicao.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     requisicao.memory = V4L2_MEMORY_MMAP;
-    if (Ioctl(VIDIOC_REQBUFS, &requisicao) == -1 || requisicao.count == 0) {
+    if (ioctlCamera(VIDIOC_REQBUFS, &requisicao) == -1 || requisicao.count == 0) {
         perror("VIDIOC_REQBUFS");
-        CameraLiberarLinux();
+        cameraLiberarLinux();
         return 0;
     }
 
@@ -87,8 +87,8 @@ int CameraInicializarLinux(const char *dispositivo, int largura, int altura) {
         buffer.type = requisicao.type;
         buffer.memory = requisicao.memory;
         buffer.index = i;
-        if (Ioctl(VIDIOC_QUERYBUF, &buffer) == -1) {
-            CameraLiberarLinux();
+        if (ioctlCamera(VIDIOC_QUERYBUF, &buffer) == -1) {
+            cameraLiberarLinux();
             return 0;
         }
         buffers[i].tamanho = buffer.length;
@@ -96,50 +96,50 @@ int CameraInicializarLinux(const char *dispositivo, int largura, int altura) {
             MAP_SHARED, camera, buffer.m.offset);
         if (buffers[i].dados == MAP_FAILED) {
             buffers[i].dados = NULL;
-            CameraLiberarLinux();
+            cameraLiberarLinux();
             return 0;
         }
-        if (Ioctl(VIDIOC_QBUF, &buffer) == -1) {
-            CameraLiberarLinux();
+        if (ioctlCamera(VIDIOC_QBUF, &buffer) == -1) {
+            cameraLiberarLinux();
             return 0;
         }
     }
 
     enum v4l2_buf_type tipo = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    if (Ioctl(VIDIOC_STREAMON, &tipo) == -1) {
+    if (ioctlCamera(VIDIOC_STREAMON, &tipo) == -1) {
         perror("VIDIOC_STREAMON");
-        CameraLiberarLinux();
+        cameraLiberarLinux();
         return 0;
     }
     printf("Webcam Linux inicializada em %s.\n", dispositivo);
     return 1;
 }
 
-int CameraCapturarLinux(void) {
+int cameraCapturarLinux(void) {
     struct v4l2_buffer buffer;
     memset(&buffer, 0, sizeof(buffer));
     buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buffer.memory = V4L2_MEMORY_MMAP;
-    if (Ioctl(VIDIOC_DQBUF, &buffer) == -1) return 0;
+    if (ioctlCamera(VIDIOC_DQBUF, &buffer) == -1) return 0;
     ultimoFrame = buffers[buffer.index].dados;
     tamanhoFrame = buffer.bytesused;
-    if (Ioctl(VIDIOC_QBUF, &buffer) == -1) return 0;
+    if (ioctlCamera(VIDIOC_QBUF, &buffer) == -1) return 0;
     return 1;
 }
 
-const unsigned char *CameraDadosLinux(void) {
+const unsigned char *cameraDadosLinux(void) {
     (void)tamanhoFrame;
     return ultimoFrame;
 }
 
-int CameraLarguraLinux(void) { return larguraCamera; }
-int CameraAlturaLinux(void) { return alturaCamera; }
-int CameraBytesPorPixelLinux(void) { return bytesPorPixelCamera; }
+int cameraLarguraLinux(void) { return larguraCamera; }
+int cameraAlturaLinux(void) { return alturaCamera; }
+int cameraBytesPorPixelLinux(void) { return bytesPorPixelCamera; }
 
-void CameraLiberarLinux(void) {
+void cameraLiberarLinux(void) {
     if (camera >= 0) {
         enum v4l2_buf_type tipo = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-        Ioctl(VIDIOC_STREAMOFF, &tipo);
+        ioctlCamera(VIDIOC_STREAMOFF, &tipo);
     }
     for (unsigned int i = 0; i < quantidadeBuffers; i++)
         if (buffers[i].dados != NULL) munmap(buffers[i].dados, buffers[i].tamanho);

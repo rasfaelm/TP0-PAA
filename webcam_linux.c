@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static int LerQualidade(void) {
+static int lerQualidade(void) {
     int valor;
     printf("Qualidade desejada (0-100): ");
     if (scanf("%d", &valor) != 1 || valor < 0 || valor > 100) {
@@ -16,24 +16,24 @@ static int LerQualidade(void) {
     return valor;
 }
 
-int ExecutarWebcamLinux(int argc, char **argv) {
+int executarWebcamLinux(int argc, char **argv) {
     const char *dispositivo = argc > 1 ? argv[1] : "/dev/video0";
-    int qualidade = LerQualidade();
+    int qualidade = lerQualidade();
     if (qualidade < 0) return EXIT_FAILURE;
 
-    if (!CameraInicializarLinux(dispositivo, 640, 480)) return EXIT_FAILURE;
-    AsciiInicializarLinux(qualidade);
+    if (!cameraInicializarLinux(dispositivo, 640, 480)) return EXIT_FAILURE;
+    asciiInicializarLinux(qualidade);
 
     for (;;) {
-        if (CameraCapturarLinux()) {
-            AsciiAtualizarLinux(CameraDadosLinux(), CameraLarguraLinux(),
-                CameraAlturaLinux(), CameraBytesPorPixelLinux());
-            AsciiDesenharLinux();
+        if (cameraCapturarLinux()) {
+            asciiAtualizarLinux(cameraDadosLinux(), cameraLarguraLinux(),
+                cameraAlturaLinux(), cameraBytesPorPixelLinux());
+            asciiDesenharLinux();
         }
         usleep(33000);
     }
 
-    AsciiLiberarLinux();
-    CameraLiberarLinux();
+    asciiLiberarLinux();
+    cameraLiberarLinux();
     return EXIT_SUCCESS;
 }

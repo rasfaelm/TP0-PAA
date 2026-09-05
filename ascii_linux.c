@@ -11,13 +11,13 @@ static char bufferASCII[MAX_ALTURA_ASCII][MAX_LARGURA_ASCII + 1];
 static int larguraASCII;
 static int alturaASCII;
 
-static char IntensidadeParaASCII(unsigned char cinza) {
+static char intensidadeParaAscii(unsigned char cinza) {
     int quantidade = (int)sizeof(caracteresASCII) - 1;
     int indice = ((255 - cinza) * (quantidade - 1)) / 255;
     return caracteresASCII[indice];
 }
 
-void AsciiInicializarLinux(int qualidade) {
+void asciiInicializarLinux(int qualidade) {
     struct winsize terminal;
     int colunas = 80;
     int linhas = 24;
@@ -34,7 +34,7 @@ void AsciiInicializarLinux(int qualidade) {
     if (alturaASCII < 1) alturaASCII = 1;
 }
 
-void AsciiAtualizarLinux(const unsigned char *dados, int larguraImagem,
+void asciiAtualizarLinux(const unsigned char *dados, int larguraImagem,
     int alturaImagem, int bytesPorPixel) {
     float escalaX = (float)larguraImagem / larguraASCII;
     float escalaY = (float)alturaImagem / alturaASCII;
@@ -53,18 +53,18 @@ void AsciiAtualizarLinux(const unsigned char *dados, int larguraImagem,
                 unsigned char blue = dados[indice + 2];
                 cinza = (unsigned char)(0.299 * red + 0.587 * green + 0.114 * blue);
             }
-            bufferASCII[y][x] = IntensidadeParaASCII(cinza);
+            bufferASCII[y][x] = intensidadeParaAscii(cinza);
         }
         bufferASCII[y][larguraASCII] = '\0';
     }
 }
 
-void AsciiDesenharLinux(void) {
+void asciiDesenharLinux(void) {
     printf("\033[H\033[J");
     for (int y = 0; y < alturaASCII; y++) printf("%s\n", bufferASCII[y]);
     fflush(stdout);
 }
 
-void AsciiLiberarLinux(void) {
+void asciiLiberarLinux(void) {
     printf("\033[0m\n");
 }

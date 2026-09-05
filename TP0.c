@@ -20,11 +20,9 @@ void inicializarQuadro(char quadro[LINHAS][COLUNAS]) {
 
             if (i == 0 || i == LINHAS - 1) {
                 quadro[i][j] = '-';
-            }
-            else if (j == 0 || j == COLUNAS - 1) {
+            } else if (j == 0 || j == COLUNAS - 1) {
                 quadro[i][j] = '|';
-            }
-            else {
+            } else {
                 quadro[i][j] = ' ';
             }
         }
@@ -181,26 +179,21 @@ void gerarObra(char quadro[LINHAS][COLUNAS],int tipo,int quantidade) {
                 coluna = rand() % (COLUNAS - 2) + 1;
             } while (!podeA(quadro, linha, coluna));
             colocarA(quadro, linha, coluna);
-        }
-        else if (tipo == 2) {
+        } else if (tipo == 2) {
             int linha, coluna;
             do {
                 linha = rand() % (LINHAS - 4) + 2;
                 coluna = rand() % (COLUNAS - 4) + 2;
             } while (!podeSoma(quadro, linha, coluna));
             colocarSoma(quadro, linha, coluna);
-        }
-
-        else if (tipo == 3) {
+        } else if (tipo == 3) {
             int linha, coluna;
             do {
                 linha = rand() % (LINHAS - 4) + 2;
                 coluna = rand() % (COLUNAS - 4) + 2;
             } while (!podeX(quadro, linha, coluna));
             colocarX(quadro, linha, coluna);
-        }
-
-        else if (tipo == 4) {
+        } else if (tipo == 4) {
             gerarFiguraAleatoria(quadro);
         }
     }
@@ -226,15 +219,17 @@ int main(int argc, char **argv) {
     printf("Digite o tipo de figura basica desejada: ");
     scanf("%d", &tipo);
 
-        if (tipo == 5) {
-    #ifdef _WIN32
-        return ExecutarWebcamWindows();
-    #else
-        return ExecutarWebcamLinux(argc, argv);
-    #endif
-        }
 
-        if (tipo < 1 || tipo > 4) {
+    if (tipo == 5) {
+        #ifdef _WIN32
+            return executarWebcamWindows();
+        #else
+            return executarWebcamLinux(argc, argv);
+        #endif
+    }
+
+
+    if (tipo < 1 || tipo > 4) {
         printf("\nOpcao ainda nao implementada.\n");
         return 0;
     }
@@ -242,6 +237,7 @@ int main(int argc, char **argv) {
     printf("Digite a quantidade de figuras ");
     printf("(menor ou igual a zero para aleatorio): ");
     scanf("%d", &quantidade);
+
 
     if (quantidade <= 0) {
         quantidade = rand() % 100 + 1;

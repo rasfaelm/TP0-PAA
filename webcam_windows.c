@@ -7,12 +7,9 @@
 
 static HWND hwndPrincipal = NULL;
 
-static int LerQualidade(void) {
+static int lerQualidade(void) {
     int valor;
     while (1) {
-        printf("\n====================================");
-        printf("\n       CONFIGURACAO DA CAMERA");
-        printf("\n====================================");
         printf("\nDigite a qualidade desejada (0-100): ");
         fflush(stdout);
         if (scanf("%d", &valor) != 1) {
@@ -29,12 +26,12 @@ static int LerQualidade(void) {
     }
 }
 
-static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+static LRESULT CALLBACK windowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
-        AsciiDesenhar(hdc);
+        asciiDesenhar(hdc);
         EndPaint(hwnd, &ps);
         return 0;
     }
@@ -45,7 +42,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
     return DefWindowProcA(hwnd, msg, wParam, lParam);
 }
 
-int ExecutarWebcamWindows(void) {
+int executarWebcamWindows(void) {
     HINSTANCE hInstance = GetModuleHandleA(NULL);
     int nCmdShow = SW_SHOWDEFAULT;
     HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -61,8 +58,8 @@ int ExecutarWebcamWindows(void) {
         return 1;
     }
 
-    int qualidade = LerQualidade();
-    hr = CameraInicializar();
+    int qualidade = lerQualidade();
+    hr = cameraInicializar();
     if (FAILED(hr)) {
         char mensagem[256];
         sprintf(mensagem, "Erro ao iniciar webcam!\nHRESULT: 0x%08lX", (unsigned long)hr);
@@ -74,13 +71,13 @@ int ExecutarWebcamWindows(void) {
 
     WNDCLASSA wc;
     ZeroMemory(&wc, sizeof(wc));
-    wc.lpfnWndProc = WindowProc;
+    wc.lpfnWndProc = windowProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = "WebcamASCII";
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     if (!RegisterClassA(&wc)) {
         MessageBoxA(NULL, "Erro ao registrar a janela!", "Erro", MB_ICONERROR);
-        CameraLiberar();
+        cameraLiberar();
         MFShutdown();
         CoUninitialize();
         return 1;
@@ -90,14 +87,14 @@ int ExecutarWebcamWindows(void) {
         WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
         NULL, NULL, hInstance, NULL);
     if (hwndPrincipal == NULL) {
-        CameraLiberar();
+        cameraLiberar();
         MFShutdown();
         CoUninitialize();
         return 1;
     }
 
-    AsciiInicializar(hwndPrincipal, qualidade);
-    AsciiAjustarJanela(hwndPrincipal);
+    asciiInicializar(hwndPrincipal, qualidade);
+    asciiAjustarJanela(hwndPrincipal);
     ShowWindow(hwndPrincipal, nCmdShow);
     UpdateWindow(hwndPrincipal);
 
@@ -108,12 +105,12 @@ int ExecutarWebcamWindows(void) {
             TranslateMessage(&msg);
             DispatchMessageA(&msg);
         }
-        CameraCapturar(hwndPrincipal);
+        cameraCapturar(hwndPrincipal);
     }
 
 fim:
-    CameraLiberar();
-    AsciiLiberar();
+    cameraLiberar();
+    asciiLiberar();
     MFShutdown();
     CoUninitialize();
     return 0;

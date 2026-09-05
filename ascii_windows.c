@@ -18,13 +18,13 @@ static int alturaCaractere = 0;
 static int larguraASCII = 0;
 static int alturaASCII = 0;
 
-static char IntensidadeParaASCII(BYTE cinza) {
+static char intensidadeParaAscii(BYTE cinza) {
     int quantidade = sizeof(caracteresASCII) - 1;
     int indice = ((255 - cinza) * (quantidade - 1)) / 255;
     return caracteresASCII[indice];
 }
 
-static void InicializarFonte(HWND hwnd, int tamanhoFonte) {
+static void inicializarFonte(HWND hwnd, int tamanhoFonte) {
     HDC hdc;
     TEXTMETRICA metricas;
 
@@ -46,7 +46,7 @@ static void InicializarFonte(HWND hwnd, int tamanhoFonte) {
     ReleaseDC(hwnd, hdc);
 }
 
-void AsciiInicializar(HWND hwnd, int qualidade) {
+void asciiInicializar(HWND hwnd, int qualidade) {
     RECT areaTrabalho;
     SystemParametersInfoA(SPI_GETWORKAREA, 0, &areaTrabalho, 0);
     int larguraDisponivel = areaTrabalho.right - areaTrabalho.left - MARGEM_HORIZONTAL;
@@ -59,7 +59,7 @@ void AsciiInicializar(HWND hwnd, int qualidade) {
 
     int tamanhoFonte = fonteMaxima - (qualidade * (fonteMaxima - FONTE_MINIMA)) / 100;
     if (tamanhoFonte < FONTE_MINIMA) tamanhoFonte = FONTE_MINIMA;
-    InicializarFonte(hwnd, tamanhoFonte);
+    inicializarFonte(hwnd, tamanhoFonte);
 
     if (larguraCaractere <= 0) larguraCaractere = 1;
     if (alturaCaractere <= 0) alturaCaractere = 1;
@@ -71,14 +71,14 @@ void AsciiInicializar(HWND hwnd, int qualidade) {
     if (alturaASCII < 1) alturaASCII = 1;
 }
 
-void AsciiAjustarJanela(HWND hwnd) {
+void asciiAjustarJanela(HWND hwnd) {
     RECT rect = { 0, 0, larguraASCII * larguraCaractere, alturaASCII * alturaCaractere };
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
     SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top,
         SWP_NOMOVE | SWP_NOZORDER);
 }
 
-void AsciiAtualizar(const BYTE *dados, HWND hwnd) {
+void asciiAtualizar(const BYTE *dados, HWND hwnd) {
     float escalaX = (float)LARGURA_ORIGINAL / (float)larguraASCII;
     float escalaY = (float)ALTURA_ORIGINAL / (float)alturaASCII;
 
@@ -94,27 +94,27 @@ void AsciiAtualizar(const BYTE *dados, HWND hwnd) {
             BYTE green = dados[indice + 1];
             BYTE red = dados[indice + 2];
             BYTE cinza = (BYTE)(0.299 * red + 0.587 * green + 0.114 * blue);
-            bufferASCII[y][x] = IntensidadeParaASCII(cinza);
+            bufferASCII[y][x] = intensidadeParaAscii(cinza);
         }
         bufferASCII[y][larguraASCII] = '\0';
     }
     InvalidateRect(hwnd, NULL, FALSE);
 }
 
-void AsciiDesenhar(HDC hdc) {
+void asciiDesenhar(HDC hdc) {
     HFONT fonteAntiga = SelectObject(hdc, fonteASCII);
     for (int y = 0; y < alturaASCII; y++)
         TextOutA(hdc, 0, y * alturaCaractere, bufferASCII[y], larguraASCII);
     SelectObject(hdc, fonteAntiga);
 }
 
-void AsciiLiberar(void) {
+void asciiLiberar(void) {
     if (fonteASCII != NULL) {
         DeleteObject(fonteASCII);
         fonteASCII = NULL;
     }
 }
 
-int AsciiLargura(void) { return larguraASCII; }
-int AsciiAltura(void) { return alturaASCII; }
-int AsciiAlturaCaractere(void) { return alturaCaractere; }
+int asciiLargura(void) { return larguraASCII; }
+int asciiAltura(void) { return alturaASCII; }
+int asciiAlturaCaractere(void) { return alturaCaractere; }
